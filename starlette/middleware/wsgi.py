@@ -5,6 +5,7 @@ import typing
 
 import anyio
 
+from starlette.concurrency import run_in_threadpool
 from starlette.types import Receive, Scope, Send
 
 
@@ -88,7 +89,7 @@ class WSGIResponder:
         async with anyio.create_task_group() as task_group:
             task_group.start_soon(self.sender, send)
             async with self.stream_send:
-                await anyio.to_thread.run_sync(self.wsgi, environ, self.start_response)
+                await run_in_threadpool(self.wsgi, environ, self.start_response)
         if self.exc_info is not None:
             raise self.exc_info[0].with_traceback(self.exc_info[1], self.exc_info[2])
 
